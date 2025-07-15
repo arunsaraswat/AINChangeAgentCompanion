@@ -104,7 +104,9 @@ export default function Sidebar() {
 
           {/* Lesson Links */}
           {navigation.slice(1).map((item) => {
-            const isActive = location === item.href;
+            // Check if the current location starts with the lesson path
+            // This handles both /lesson/1 and /lesson/1/1.1 URLs
+            const isActive = location.startsWith(item.href);
             const Icon = item.icon;
             return (
               <Link key={item.name} href={item.href}>

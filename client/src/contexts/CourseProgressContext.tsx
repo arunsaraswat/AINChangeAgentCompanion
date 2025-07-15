@@ -1,30 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import type { Exercise } from "@shared/types";
 
-export interface Exercise {
-  id: string;
-  type: "text" | "textarea" | "radio" | "checkbox" | "multi-step" | "radio-with-text";
-  label: string;
-  description?: string;
-  options?: string[];
-  answer?: string | string[];
-  component?: string;
-  followUpLabel?: string;
-  followUpDescription?: string;
-  followUpAnswer?: string;
-}
-
-export interface SubLesson {
-  id: string;
-  title: string;
-  completed: boolean;
-  exercises: Exercise[];
-}
-
-export interface Lesson {
-  id: number;
-  title: string;
-  subLessons: SubLesson[];
-}
+export { Exercise };
 
 interface CourseProgress {
   lessons: {
@@ -36,6 +13,9 @@ interface CourseProgress {
             [exerciseId: string]: {
               answer: string | string[] | undefined;
               followUpAnswer?: string;
+              stepAnswers?: {
+                [stepId: string]: string | string[] | undefined;
+              };
             };
           };
         };
@@ -53,13 +33,26 @@ interface CourseProgressContextValue {
     answer: string | string[] | undefined,
     followUpAnswer?: string
   ) => void;
+  updateFollowUpAnswer: (
+    lessonId: number,
+    subLessonId: string,
+    exerciseId: string,
+    followUpAnswer: string
+  ) => void;
+  updateStepAnswer: (
+    lessonId: number,
+    subLessonId: string,
+    exerciseId: string,
+    stepId: string,
+    answer: string | string[] | undefined
+  ) => void;
   markSubLessonComplete: (lessonId: number, subLessonId: string) => void;
   getSubLessonProgress: (lessonId: number, subLessonId: string) => boolean;
   getExerciseAnswer: (
     lessonId: number,
     subLessonId: string,
     exerciseId: string
-  ) => { answer: string | string[] | undefined; followUpAnswer?: string } | undefined;
+  ) => { answer: string | string[] | undefined; followUpAnswer?: string; stepAnswers?: { [stepId: string]: string | string[] | undefined } } | undefined;
   getOverallProgress: () => number;
   getLessonProgress: (lessonId: number) => number;
   exportProgress: () => void;
@@ -113,6 +106,72 @@ export function CourseProgressProvider({ children }: { children: React.ReactNode
                 [exerciseId]: {
                   answer,
                   followUpAnswer,
+                },
+              },
+            },
+          },
+        },
+      },
+    }));
+  };
+
+  const updateFollowUpAnswer = (
+    lessonId: number,
+    subLessonId: string,
+    exerciseId: string,
+    followUpAnswer: string
+  ) => {
+    setProgress((prev) => ({
+      ...prev,
+      lessons: {
+        ...prev.lessons,
+        [lessonId]: {
+          ...prev.lessons[lessonId],
+          subLessons: {
+            ...prev.lessons[lessonId]?.subLessons,
+            [subLessonId]: {
+              ...prev.lessons[lessonId]?.subLessons?.[subLessonId],
+              completed: prev.lessons[lessonId]?.subLessons?.[subLessonId]?.completed || false,
+              exercises: {
+                ...prev.lessons[lessonId]?.subLessons?.[subLessonId]?.exercises,
+                [exerciseId]: {
+                  ...prev.lessons[lessonId]?.subLessons?.[subLessonId]?.exercises?.[exerciseId],
+                  followUpAnswer,
+                },
+              },
+            },
+          },
+        },
+      },
+    }));
+  };
+
+  const updateStepAnswer = (
+    lessonId: number,
+    subLessonId: string,
+    exerciseId: string,
+    stepId: string,
+    answer: string | string[] | undefined
+  ) => {
+    setProgress((prev) => ({
+      ...prev,
+      lessons: {
+        ...prev.lessons,
+        [lessonId]: {
+          ...prev.lessons[lessonId],
+          subLessons: {
+            ...prev.lessons[lessonId]?.subLessons,
+            [subLessonId]: {
+              ...prev.lessons[lessonId]?.subLessons?.[subLessonId],
+              completed: prev.lessons[lessonId]?.subLessons?.[subLessonId]?.completed || false,
+              exercises: {
+                ...prev.lessons[lessonId]?.subLessons?.[subLessonId]?.exercises,
+                [exerciseId]: {
+                  ...prev.lessons[lessonId]?.subLessons?.[subLessonId]?.exercises?.[exerciseId],
+                  stepAnswers: {
+                    ...prev.lessons[lessonId]?.subLessons?.[subLessonId]?.exercises?.[exerciseId]?.stepAnswers,
+                    [stepId]: answer,
+                  },
                 },
               },
             },
@@ -198,6 +257,8 @@ export function CourseProgressProvider({ children }: { children: React.ReactNode
       value={{
         progress,
         updateExerciseAnswer,
+        updateFollowUpAnswer,
+        updateStepAnswer,
         markSubLessonComplete,
         getSubLessonProgress,
         getExerciseAnswer,

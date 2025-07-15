@@ -9,7 +9,7 @@ This is the **AI-Native Change Agent Class Companion** - a React-based education
 ## Development Commands
 
 ### Core Development
-- `npm run dev` - Start development server with hot reload (runs on port 5000)
+- `npm run dev` - Start development server with hot reload (runs on port 5001)
 - `npm run build` - Build production application
 - `npm start` - Run production server
 - `npm run check` - Run TypeScript type checking
@@ -75,7 +75,7 @@ The application contains 10 main lessons:
 ### Development Setup
 1. Install dependencies: `npm install`
 2. Start development server: `npm run dev`
-3. Application runs on `http://localhost:5000`
+3. Application runs on `http://localhost:5001`
 
 ## File Structure Conventions
 
