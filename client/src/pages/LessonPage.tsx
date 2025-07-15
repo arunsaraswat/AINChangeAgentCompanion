@@ -23,7 +23,7 @@ const lessonTitles: { [key: number]: string } = {
 
 export default function LessonPage({ lessonId, subLessonId }: LessonPageProps) {
   return (
-    <div className="max-w-4xl mx-auto">
+    <div>
       <div className="mb-6">
         <Link href="/">
           <Button variant="ghost" className="mb-4">

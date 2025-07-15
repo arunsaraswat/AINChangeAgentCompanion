@@ -25,7 +25,7 @@ export default function Dashboard() {
   const overallProgress = getOverallProgress();
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Welcome to AI-Native Change Agent Training</h1>
         <p className="text-muted-foreground">
