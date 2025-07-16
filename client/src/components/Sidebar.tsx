@@ -19,6 +19,7 @@ import {
   Sparkles,
   Moon,
   Sun,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCourseProgress } from "@/contexts/CourseProgressContext";
@@ -38,8 +39,13 @@ const navigation = [
   { name: "Lesson 10: Expanding Your Impact", href: "/lesson/10", icon: TrendingUp },
 ];
 
-export default function Sidebar() {
-  const [location] = useLocation();
+interface SidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export default function Sidebar({ isOpen, onClose }: SidebarProps) {
+  const [location, setLocation] = useLocation();
   const { exportProgress, importProgress, clearProgress } = useCourseProgress();
   const { theme, toggleTheme } = useTheme();
 
@@ -62,18 +68,37 @@ export default function Sidebar() {
     input.click();
   };
 
+  const handleNavigation = (href: string) => {
+    setLocation(href);
+    // Close sidebar on mobile after navigation
+    if (onClose && window.innerWidth < 768) {
+      onClose();
+    }
+  };
+
   return (
     <div className="w-80 bg-card border-r flex flex-col h-full">
       {/* App Header */}
       <div className="p-6 border-b">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
-            <Sparkles className="text-primary-foreground" size={24} />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
+              <Sparkles className="text-primary-foreground" size={24} />
+            </div>
+            <div>
+              <h1 className="text-lg font-semibold">AI-Native Change Agent</h1>
+              <p className="text-xs text-muted-foreground">Class Companion App</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-lg font-semibold">AI-Native Change Agent</h1>
-            <p className="text-xs text-muted-foreground">Class Companion App</p>
-          </div>
+          {/* Close button for mobile */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            className="md:hidden"
+          >
+            <X className="h-5 w-5" />
+          </Button>
         </div>
       </div>
 
@@ -81,19 +106,18 @@ export default function Sidebar() {
       <div className="flex-1 p-4 overflow-y-auto">
         <nav className="space-y-1">
           {/* Dashboard Link */}
-          <Link href="/">
-            <a
-              className={cn(
-                "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors mb-4",
-                location === "/"
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-              )}
-            >
-              <Home className="mr-3 h-4 w-4 flex-shrink-0" />
-              Dashboard
-            </a>
-          </Link>
+          <button
+            onClick={() => handleNavigation("/")}
+            className={cn(
+              "w-full flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors mb-4",
+              location === "/"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+            )}
+          >
+            <Home className="mr-3 h-4 w-4 flex-shrink-0" />
+            Dashboard
+          </button>
 
           {/* Lessons Separator */}
           <div className="pt-2 pb-2">
@@ -105,23 +129,23 @@ export default function Sidebar() {
           {/* Lesson Links */}
           {navigation.slice(1).map((item) => {
             // Check if the current location starts with the lesson path
-            // This handles both /lesson/1 and /lesson/1/1.1 URLs
+            // This handles both /lesson/1 and /lesson/1/activity URLs
             const isActive = location.startsWith(item.href);
             const Icon = item.icon;
             return (
-              <Link key={item.name} href={item.href}>
-                <a
-                  className={cn(
-                    "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                    isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                  )}
-                >
-                  <Icon className="mr-3 h-4 w-4 flex-shrink-0" />
-                  {item.name}
-                </a>
-              </Link>
+              <button
+                key={item.name}
+                onClick={() => handleNavigation(item.href)}
+                className={cn(
+                  "w-full flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                  isActive
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                )}
+              >
+                <Icon className="mr-3 h-4 w-4 flex-shrink-0" />
+                <span className="text-left">{item.name}</span>
+              </button>
             );
           })}
         </nav>

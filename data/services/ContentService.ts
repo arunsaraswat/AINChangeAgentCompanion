@@ -30,7 +30,23 @@ class ContentService {
 
   async getSubLesson(lessonId: number, subLessonId: string) {
     const lesson = await this.getLesson(lessonId);
-    return lesson?.subLessons.find(sub => sub.id === subLessonId);
+    return lesson?.subLessons?.find(sub => sub.id === subLessonId);
+  }
+
+  async getActivity(lessonId: number, activityId: string, subLessonId?: string) {
+    const lesson = await this.getLesson(lessonId);
+    if (!lesson) return undefined;
+
+    if (subLessonId && lesson.subLessons) {
+      // Activity within a sub-lesson
+      const subLesson = lesson.subLessons.find(sl => sl.id === subLessonId);
+      return subLesson?.activities?.find(a => a.id === activityId);
+    } else if (lesson.activities) {
+      // Direct activity under lesson
+      return lesson.activities.find(a => a.id === activityId);
+    }
+
+    return undefined;
   }
 }
 

@@ -6,10 +6,12 @@ export const lesson1: Lesson = {
   duration: "45 minutes",
   description: "Identify and overcome hidden barriers to AI adoption",
   image: "/images/lesson1.jpg",
-  subLessons: [
+  activities: [
     {
-      id: "1.1",
-      title: "Section 1: Group Discussion - Failed Projects",
+      id: "activity-1",
+      title: "Group Discussion - Failed Projects",
+      type: "discussion",
+      duration: "10 minutes",
       content: `
         <p>In this section, we'll explore 'cool' initiatives in organizations that generated excitement but ultimately failed to deliver on their promises.</p>
       `,
@@ -24,8 +26,10 @@ export const lesson1: Lesson = {
       ]
     },
     {
-      id: "1.2",
-      title: "Section 2: Class Activity - Where Is Your Blind Spot?",
+      id: "activity-2",
+      title: "Class Activity - Where Is Your Blind Spot?",
+      type: "group-work",
+      duration: "15 minutes",
       content: `
         <p>This activity has three steps. First, you will reflect silently. Second, you will vote on your organization's biggest blind spot. Third, you will discuss your choice with a group.</p>
       `,
@@ -63,8 +67,10 @@ export const lesson1: Lesson = {
       ]
     },
     {
-      id: "1.3",
-      title: "Section 3: Class Discussion - Insights Debrief",
+      id: "activity-3",
+      title: "Class Discussion - Insights Debrief",
+      type: "discussion",
+      duration: "15 minutes",
       content: `
         <p>Review your group's findings and prepare to share with the class.</p>
       `,
@@ -79,8 +85,10 @@ export const lesson1: Lesson = {
       ]
     },
     {
-      id: "1.4",
-      title: "Section 4: Individual Reflection",
+      id: "activity-4",
+      title: "Individual Reflection",
+      type: "reflection",
+      duration: "10 minutes",
       content: `
         <p>Take time to reflect personally on how these blind spots affect your organization's AI initiatives.</p>
       `,

@@ -86,7 +86,7 @@ export default function Dashboard() {
       </div>
 
       {/* Lessons Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         {lessons.map((lesson) => {
           const progress = getLessonProgress(lesson.id);
           return (
@@ -105,7 +105,7 @@ export default function Dashboard() {
                 <p className="text-sm text-muted-foreground mb-4">{lesson.description}</p>
                 <Progress value={progress} className="mb-4" />
                 <Link href={`/lesson/${lesson.id}`}>
-                  <Button className="w-full">
+                  <Button className="w-full bg-green-400 hover:bg-green-500 text-white">
                     {progress > 0 ? "Continue" : "Start"} Lesson
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>

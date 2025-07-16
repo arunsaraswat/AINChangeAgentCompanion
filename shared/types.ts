@@ -23,11 +23,21 @@ export interface Exercise {
   helperPrompt?: string;
 }
 
+export interface Activity {
+  id: string;
+  title: string;
+  type?: 'discussion' | 'exercise' | 'reflection' | 'group-work' | 'activity';
+  duration?: string;
+  content: string;
+  exercises?: Exercise[];
+  completed?: boolean;
+}
+
 export interface SubLesson {
   id: string;
   title: string;
-  content: string;
-  exercises?: Exercise[];
+  description?: string;
+  activities: Activity[];
   completed?: boolean;
 }
 
@@ -37,5 +47,6 @@ export interface Lesson {
   duration: string;
   description: string;
   image?: string;
-  subLessons: SubLesson[];
+  activities?: Activity[];
+  subLessons?: SubLesson[];
 }

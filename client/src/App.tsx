@@ -14,6 +14,12 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
+      <Route path="/lesson/:id/activity/:activityId">
+        {(params) => <LessonPage lessonId={parseInt(params.id)} activityId={params.activityId} />}
+      </Route>
+      <Route path="/lesson/:id/:subLessonId/activity/:activityId">
+        {(params) => <LessonPage lessonId={parseInt(params.id)} subLessonId={params.subLessonId} activityId={params.activityId} />}
+      </Route>
       <Route path="/lesson/:id/:subLessonId?">
         {(params) => <LessonPage lessonId={parseInt(params.id)} subLessonId={params.subLessonId} />}
       </Route>
