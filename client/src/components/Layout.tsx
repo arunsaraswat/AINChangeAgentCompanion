@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import Sidebar from "./Sidebar";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ChatHelperProvider } from "./ChatHelperContext";
+import { ChatHelper } from "./ChatHelper";
+import { ChatHelperButton } from "./ChatHelperButton";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -11,7 +14,8 @@ export default function Layout({ children }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-screen bg-background">
+    <ChatHelperProvider>
+      <div className="flex h-screen bg-background">
       {/* Mobile menu button */}
       <div className="fixed top-0 left-0 right-0 z-50 flex items-center bg-background border-b p-4 md:hidden">
         <Button
@@ -49,6 +53,11 @@ export default function Layout({ children }: LayoutProps) {
       <main className="flex-1 overflow-y-auto px-4 md:px-6 py-6 pt-20 md:pt-6">
         {children}
       </main>
+
+      {/* Chat Helper components */}
+      <ChatHelper />
+      <ChatHelperButton />
     </div>
+    </ChatHelperProvider>
   );
 }
