@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Send, Trash2, Copy, Check, Download } from 'lucide-react';
+import { Send, Trash2, Copy, Check, Download, User, Bot } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -135,14 +135,19 @@ export const ChatHelper: React.FC = () => {
               messages.map((message) => (
                 <div
                   key={message.id}
-                  className={`flex ${
+                  className={`flex gap-2 ${
                     message.role === 'user' ? 'justify-end' : 'justify-start'
                   }`}
                 >
+                  {message.role === 'assistant' && (
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                      <Bot className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                  )}
                   <div
                     className={`max-w-[80%] rounded-lg px-4 py-2 relative group ${
                       message.role === 'user'
-                        ? 'bg-blue-600 text-white'
+                        ? 'bg-green-600 text-white'
                         : 'bg-muted'
                     }`}
                   >
@@ -168,11 +173,19 @@ export const ChatHelper: React.FC = () => {
                       )}
                     </Button>
                   </div>
+                  {message.role === 'user' && (
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-600 flex items-center justify-center">
+                      <User className="h-5 w-5 text-white" />
+                    </div>
+                  )}
                 </div>
               ))
             )}
             {isLoading && (
-              <div className="flex justify-start">
+              <div className="flex justify-start gap-2">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                  <Bot className="h-5 w-5 text-muted-foreground" />
+                </div>
                 <div className="max-w-[80%] rounded-lg px-4 py-2 bg-muted">
                   <div className="flex items-center space-x-2">
                     <div className="animate-pulse flex space-x-1">

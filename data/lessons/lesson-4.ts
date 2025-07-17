@@ -33,11 +33,6 @@ export const lesson4: Lesson = {
       type: 'group-work',
       duration: '15 minutes',
       content: `
-        <p class="text-gray-700 dark:text-gray-300 mb-4">
-          You will read a business scenario and identify overlooked stakeholders and the best-fit sponsor. 
-          Your goal is to discuss and agree on a final list and be prepared to justify your choices. 
-          This activity will take approximately 15 minutes.
-        </p>
         <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg mb-4">
           <h4 class="font-semibold mb-2">The Scenario:</h4>
           <p class="text-gray-700 dark:text-gray-300">
