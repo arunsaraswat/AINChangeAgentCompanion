@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import type { Exercise } from "@shared/types";
+import ContentService from '../../../data/services/ContentService';
 
 export { Exercise };
 
@@ -467,14 +468,29 @@ export function CourseProgressProvider({ children }: { children: React.ReactNode
     const lesson = progress.lessons[lessonId];
     if (!lesson) return 0;
 
-    // For lesson 1, we know it has 4 activities
-    if (lessonId === 1) {
-      const totalActivities = 4;
-      const completedActivities = lesson.activities ? Object.values(lesson.activities).filter((a) => a.completed).length : 0;
+    // For lessons with activities structure (like lesson 1 and 2)
+    if (lesson.activities) {
+      // Get the actual lesson data to count total activities
+      ContentService.getLesson(lessonId).then(lessonData => {
+        if (lessonData?.activities) {
+          const totalActivities = lessonData.activities.length;
+          const completedActivities = Object.values(lesson.activities || {}).filter((a) => a.completed).length;
+          return Math.round((completedActivities / totalActivities) * 100);
+        }
+      });
+      
+      // Fallback synchronous calculation based on completed activities
+      const completedActivities = Object.values(lesson.activities).filter((a) => a.completed).length;
+      // For now, we know lesson 1 has 4 activities and lesson 2 has 4 activities
+      const totalActivitiesMap: Record<number, number> = {
+        1: 4,
+        2: 4,
+      };
+      const totalActivities = totalActivitiesMap[lessonId] || Object.keys(lesson.activities).length || 1;
       return Math.round((completedActivities / totalActivities) * 100);
     }
 
-    // For other lessons with sub-lessons (future implementation)
+    // For lessons with sub-lessons structure
     if (lesson.subLessons) {
       const totalSubLessons = Object.keys(lesson.subLessons).length;
       if (totalSubLessons === 0) return 0;
@@ -509,7 +525,12 @@ export function CourseProgressProvider({ children }: { children: React.ReactNode
 
   const clearProgress = () => {
     if (confirm("Are you sure you want to clear all progress? This cannot be undone.")) {
-      setProgress({ lessons: {} });
+      // Clear all localStorage data
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem("theme");
+      
+      // Reload the page and navigate to home
+      window.location.href = '/';
     }
   };
 

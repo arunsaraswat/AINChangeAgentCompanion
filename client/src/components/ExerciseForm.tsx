@@ -4,12 +4,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCourseProgress, type Exercise } from "../contexts/CourseProgressContext";
+import { lazy, Suspense } from "react";
 
 interface ExerciseFormProps {
   exercise: Exercise;
   lessonId: number;
   subLessonId: string;
 }
+
+// Dynamic import for custom exercise components
+const exerciseComponents: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {
+  MatchTheMethodDragDrop: lazy(() => import("./exercises/MatchTheMethodDragDrop")),
+  StakeholderDragDrop: lazy(() => import("./exercises/StakeholderDragDrop")),
+};
 
 export default function ExerciseForm({ exercise, lessonId, subLessonId }: ExerciseFormProps) {
   const { updateExerciseAnswer, updateStepAnswer } = useCourseProgress();
@@ -117,6 +124,21 @@ export default function ExerciseForm({ exercise, lessonId, subLessonId }: Exerci
               </div>
             ))}
           </div>
+        );
+
+      case 'component':
+        if (!exercise.component || !exerciseComponents[exercise.component]) {
+          return <p className="text-sm text-muted-foreground">Component not found: {exercise.component}</p>;
+        }
+        
+        const Component = exerciseComponents[exercise.component];
+        return (
+          <Suspense fallback={<div className="text-sm text-muted-foreground">Loading component...</div>}>
+            <Component
+              answer={exercise.answer}
+              onAnswerChange={handleAnswerChange}
+            />
+          </Suspense>
         );
 
       default:
