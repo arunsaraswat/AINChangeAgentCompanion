@@ -9,6 +9,8 @@ import { lesson5 } from './lessons/lesson-5';
 import { lesson6 } from './lessons/lesson-6';
 import { lesson7 } from './lessons/lesson-7';
 import { lesson8 } from './lessons/lesson-8';
+import { lesson9 } from './lessons/lesson-9';
+import { lesson10 } from './lessons/lesson-10';
 // etc...
 
 export async function getCourseContent(): Promise<Lesson[]> {
@@ -23,8 +25,8 @@ export async function getCourseContent(): Promise<Lesson[]> {
     lesson6,
     lesson7,
     lesson8,
-    // lesson9,
-    // lesson10,
+    lesson9,
+    lesson10,
   ];
 }
 
