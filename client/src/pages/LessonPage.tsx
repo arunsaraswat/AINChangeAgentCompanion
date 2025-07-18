@@ -293,52 +293,45 @@ export default function LessonPage({ lessonId, subLessonId, activityId }: Lesson
               </p>
             </div>
 
-            {/* Sub-lesson navigation */}
-            <div className="flex items-center gap-2 mb-4 flex-wrap">
-              {lesson.subLessons.map((subLesson, index) => {
+            {/* Sub-lesson navigation - 3 per row */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              {lesson.subLessons.map((subLesson) => {
                 const isActive = subLesson.id === currentSubLesson.id;
                 const isSubCompleted = getSubLessonProgress(lessonId, subLesson.id);
                 
                 return (
-                  <React.Fragment key={subLesson.id}>
-                    <Link href={`/lesson/${lessonId}/${subLesson.id}`}>
-                      <Button
-                        variant={isActive ? "default" : "outline"}
-                        size="sm"
-                        className="relative"
-                      >
-                        {isSubCompleted && (
-                          <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
-                        )}
-                        {subLesson.id}: {subLesson.title}
-                      </Button>
-                    </Link>
-                    {index < lesson.subLessons.length - 1 && (
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                    )}
-                  </React.Fragment>
+                  <Link key={subLesson.id} href={`/lesson/${lessonId}/${subLesson.id}`}>
+                    <Button
+                      variant={isActive ? "default" : "outline"}
+                      className="w-full justify-start relative"
+                    >
+                      {isSubCompleted && (
+                        <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                      )}
+                      <span className="truncate">{subLesson.id}: {subLesson.title}</span>
+                    </Button>
+                  </Link>
                 );
               })}
               {/* Show reflection link */}
               {lesson.activities && lesson.activities.length > 0 && (
-                <>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                  <Link href={`/lesson/${lessonId}/activity/${lesson.activities[0].id}`}>
-                    <Button
-                      variant={allSubLessonsComplete ? "outline" : "ghost"}
-                      size="sm"
-                      className="relative"
-                      disabled={!allSubLessonsComplete}
-                    >
-                      {allSubLessonsComplete && (
-                        <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
-                      )}
-                      Reflection
-                    </Button>
-                  </Link>
-                </>
+                <Link href={`/lesson/${lessonId}/activity/${lesson.activities[0].id}`}>
+                  <Button
+                    variant={allSubLessonsComplete ? "outline" : "ghost"}
+                    className="w-full justify-start relative"
+                    disabled={!allSubLessonsComplete}
+                  >
+                    {allSubLessonsComplete && (
+                      <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                    )}
+                    Reflection
+                  </Button>
+                </Link>
               )}
             </div>
+
+            {/* Visual separator */}
+            <hr className="mb-6 border-t border-gray-200 dark:border-gray-700" />
 
             {/* Activity navigation within sub-lesson */}
             <ActivityNav
@@ -445,50 +438,40 @@ export default function LessonPage({ lessonId, subLessonId, activityId }: Lesson
             </p>
           </div>
 
-          {/* Sub-lesson navigation */}
-          <div className="flex items-center gap-2 mb-6 flex-wrap">
-            {lesson.subLessons.map((subLesson, index) => {
+          {/* Sub-lesson navigation - 3 per row */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            {lesson.subLessons.map((subLesson) => {
               const isActive = subLesson.id === currentSubLesson.id;
               const isSubCompleted = getSubLessonProgress(lessonId, subLesson.id);
               
               return (
-                <React.Fragment key={subLesson.id}>
-                  <Link href={`/lesson/${lessonId}/${subLesson.id}`}>
-                    <Button
-                      variant={isActive ? "default" : "outline"}
-                      size="sm"
-                      className="relative"
-                    >
-                      {isSubCompleted && (
-                        <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
-                      )}
-                      {subLesson.id}
-                    </Button>
-                  </Link>
-                  {index < lesson.subLessons.length - 1 && (
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                  )}
-                </React.Fragment>
+                <Link key={subLesson.id} href={`/lesson/${lessonId}/${subLesson.id}`}>
+                  <Button
+                    variant={isActive ? "default" : "outline"}
+                    className="w-full justify-start relative"
+                  >
+                    {isSubCompleted && (
+                      <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                    )}
+                    <span className="truncate">{subLesson.id}: {subLesson.title}</span>
+                  </Button>
+                </Link>
               );
             })}
             {/* Show reflection link */}
             {lesson.activities && lesson.activities.length > 0 && (
-              <>
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                <Link href={`/lesson/${lessonId}/activity/${lesson.activities[0].id}`}>
-                  <Button
-                    variant={allSubLessonsComplete ? "outline" : "ghost"}
-                    size="sm"
-                    className="relative"
-                    disabled={!allSubLessonsComplete}
-                  >
-                    {allSubLessonsComplete && (
-                      <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
-                    )}
-                    Reflection
-                  </Button>
-                </Link>
-              </>
+              <Link href={`/lesson/${lessonId}/activity/${lesson.activities[0].id}`}>
+                <Button
+                  variant={allSubLessonsComplete ? "outline" : "ghost"}
+                  className="w-full justify-start relative"
+                  disabled={!allSubLessonsComplete}
+                >
+                  {allSubLessonsComplete && (
+                    <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                  )}
+                  Reflection
+                </Button>
+              </Link>
             )}
           </div>
         </div>
@@ -574,44 +557,38 @@ export default function LessonPage({ lessonId, subLessonId, activityId }: Lesson
 
           {/* Show sub-lesson navigation if lesson has sub-lessons */}
           {lesson.subLessons && (
-            <div className="flex items-center gap-2 mb-4 flex-wrap">
-              {lesson.subLessons.map((subLesson, index) => {
-                const isSubCompleted = getSubLessonProgress(lessonId, subLesson.id);
-                
-                return (
-                  <React.Fragment key={subLesson.id}>
-                    <Link href={`/lesson/${lessonId}/${subLesson.id}`}>
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                {lesson.subLessons.map((subLesson) => {
+                  const isSubCompleted = getSubLessonProgress(lessonId, subLesson.id);
+                  
+                  return (
+                    <Link key={subLesson.id} href={`/lesson/${lessonId}/${subLesson.id}`}>
                       <Button
                         variant="outline"
-                        size="sm"
-                        className="relative"
+                        className="w-full justify-start relative"
                       >
                         {isSubCompleted && (
                           <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
                         )}
-                        {subLesson.id}: {subLesson.title}
+                        <span className="truncate">{subLesson.id}: {subLesson.title}</span>
                       </Button>
                     </Link>
-                    {index < lesson.subLessons.length - 1 && (
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                    )}
-                  </React.Fragment>
-                );
-              })}
-              {/* Show reflection link as active */}
-              {lesson.activities && lesson.activities.length > 0 && (
-                <>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  );
+                })}
+                {/* Show reflection link as active */}
+                {lesson.activities && lesson.activities.length > 0 && (
                   <Button
                     variant="default"
-                    size="sm"
-                    className="relative"
+                    className="w-full justify-start relative"
                   >
                     Reflection
                   </Button>
-                </>
-              )}
-            </div>
+                )}
+              </div>
+              {/* Visual separator */}
+              <hr className="mb-6 border-t border-gray-200 dark:border-gray-700" />
+            </>
           )}
 
           {/* Activity navigation */}

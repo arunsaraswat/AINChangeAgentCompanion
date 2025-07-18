@@ -16,6 +16,9 @@ interface ExerciseFormProps {
 const exerciseComponents: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {
   MatchTheMethodDragDrop: lazy(() => import("./exercises/MatchTheMethodDragDrop")),
   StakeholderDragDrop: lazy(() => import("./exercises/StakeholderDragDrop")),
+  PatternMatchingDragDrop: lazy(() => import("./exercises/PatternMatchingDragDrop")),
+  RiskRadarDragDrop: lazy(() => import("./exercises/RiskRadarDragDrop")),
+  OperationalDebtDragDrop: lazy(() => import("./exercises/OperationalDebtDragDrop")),
 };
 
 export default function ExerciseForm({ exercise, lessonId, subLessonId }: ExerciseFormProps) {
