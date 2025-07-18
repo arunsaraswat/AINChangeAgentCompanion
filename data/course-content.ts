@@ -5,7 +5,7 @@ import { lesson3 } from './lessons/lesson-3';
 import { lesson4 } from './lessons/lesson-4';
 
 // Import additional lessons as they are created
-// import { lesson5 } from './lessons/lesson-5';
+import { lesson5 } from './lessons/lesson-5';
 // etc...
 
 export async function getCourseContent(): Promise<Lesson[]> {
@@ -16,7 +16,7 @@ export async function getCourseContent(): Promise<Lesson[]> {
     lesson2,
     lesson3,
     lesson4,
-    // lesson5,
+    lesson5,
     // lesson6,
     // lesson7,
     // lesson8,

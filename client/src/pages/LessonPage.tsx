@@ -40,23 +40,22 @@ export default function LessonPage({ lessonId, subLessonId, activityId }: Lesson
           setLesson(lessonData);
           
           // Handle navigation based on lesson structure
-          if (lessonData.activities) {
-            // Direct activities under lesson
-            if (!activityId && lessonData.activities.length > 0) {
-              setLocation(`/lesson/${lessonId}/activity/${lessonData.activities[0].id}`);
+          // Prioritize sub-lessons over direct activities
+          if (lessonData.subLessons) {
+            // Sub-lessons structure
+            if (!subLessonId && !activityId && lessonData.subLessons.length > 0) {
+              // No sub-lesson or activity specified, go to first sub-lesson
+              setLocation(`/lesson/${lessonId}/${lessonData.subLessons[0].id}`);
               return;
             }
             
-            // Find current activity
-            const activity = lessonData.activities.find(a => a.id === activityId);
-            if (activity) {
-              setCurrentActivity(mergeActivityWithAnswers(activity, lessonId, null, activityId));
-            }
-          } else if (lessonData.subLessons) {
-            // Sub-lessons structure
-            if (!subLessonId && lessonData.subLessons.length > 0) {
-              setLocation(`/lesson/${lessonId}/${lessonData.subLessons[0].id}`);
-              return;
+            // Check if we're viewing a direct activity (reflection)
+            if (!subLessonId && activityId && lessonData.activities) {
+              const activity = lessonData.activities.find(a => a.id === activityId);
+              if (activity) {
+                setCurrentActivity(mergeActivityWithAnswers(activity, lessonId, null, activityId));
+                return;
+              }
             }
             
             // Find current sub-lesson
@@ -76,6 +75,18 @@ export default function LessonPage({ lessonId, subLessonId, activityId }: Lesson
                   setCurrentActivity(mergeActivityWithAnswers(activity, lessonId, subLessonId, activityId));
                 }
               }
+            }
+          } else if (lessonData.activities) {
+            // Direct activities under lesson (only if no sub-lessons)
+            if (!activityId && lessonData.activities.length > 0) {
+              setLocation(`/lesson/${lessonId}/activity/${lessonData.activities[0].id}`);
+              return;
+            }
+            
+            // Find current activity
+            const activity = lessonData.activities.find(a => a.id === activityId);
+            if (activity) {
+              setCurrentActivity(mergeActivityWithAnswers(activity, lessonId, null, activityId));
             }
           }
         } else {
@@ -123,7 +134,7 @@ export default function LessonPage({ lessonId, subLessonId, activityId }: Lesson
 
   const handleCompleteActivity = () => {
     if (currentActivity && lesson) {
-      if (lesson.activities) {
+      if (lesson.activities && !subLessonId) {
         // Direct activities
         markActivityComplete(lessonId, currentActivity.id);
         
@@ -146,11 +157,14 @@ export default function LessonPage({ lessonId, subLessonId, activityId }: Lesson
           // Mark sub-lesson as complete when all activities are done
           markSubLessonComplete(lessonId, subLessonId!);
           
-          // Navigate to next sub-lesson or back to dashboard
+          // Navigate to next sub-lesson or reflection activity
           const subLessonIndex = lesson.subLessons!.findIndex(sl => sl.id === subLessonId);
           if (subLessonIndex < lesson.subLessons!.length - 1) {
             const nextSubLesson = lesson.subLessons![subLessonIndex + 1];
             setLocation(`/lesson/${lessonId}/${nextSubLesson.id}`);
+          } else if (lesson.activities && lesson.activities.length > 0) {
+            // All sub-lessons complete, go to reflection
+            setLocation(`/lesson/${lessonId}/activity/${lesson.activities[0].id}`);
           } else {
             setLocation("/");
           }
@@ -224,8 +238,301 @@ export default function LessonPage({ lessonId, subLessonId, activityId }: Lesson
   }
 
   // Render content based on lesson structure
-  if (lesson.activities) {
-    // Direct activities under lesson
+  // Prioritize sub-lessons over direct activities for display
+  if (lesson.subLessons && (!activityId || subLessonId)) {
+    // Sub-lesson based structure
+    if (!currentSubLesson) {
+      return (
+        <div className="text-center py-12">
+          <h2 className="text-2xl font-semibold mb-4">Sub-lesson not found</h2>
+          <Link href="/">
+            <Button>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Dashboard
+            </Button>
+          </Link>
+        </div>
+      );
+    }
+
+    // Check if all sub-lessons are complete to show reflection
+    const allSubLessonsComplete = lesson.subLessons.every(sl => 
+      getSubLessonProgress(lessonId, sl.id)
+    );
+    
+    // If all sub-lessons are complete and we have reflection activities, redirect to first reflection
+    if (allSubLessonsComplete && lesson.activities && lesson.activities.length > 0 && !activityId && !subLessonId) {
+      setLocation(`/lesson/${lessonId}/activity/${lesson.activities[0].id}`);
+      return null;
+    }
+
+    // Render sub-lesson with activities
+    if (currentSubLesson.activities && currentActivity) {
+      const completedActivities = new Set(
+        currentSubLesson.activities
+          .filter(a => getActivityProgress(lessonId, a.id, currentSubLesson.id))
+          .map(a => a.id)
+      );
+
+      return (
+        <div className="max-w-4xl">
+          <div className="mb-6">
+            <Link href="/">
+              <Button variant="ghost" className="mb-4">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Dashboard
+              </Button>
+            </Link>
+            
+            <div className="mb-4">
+              <h1 className="text-3xl font-bold mb-2">
+                Lesson {lessonId}: {lesson.title}
+              </h1>
+              <p className="text-muted-foreground">
+                {lesson.description}
+              </p>
+            </div>
+
+            {/* Sub-lesson navigation */}
+            <div className="flex items-center gap-2 mb-4 flex-wrap">
+              {lesson.subLessons.map((subLesson, index) => {
+                const isActive = subLesson.id === currentSubLesson.id;
+                const isSubCompleted = getSubLessonProgress(lessonId, subLesson.id);
+                
+                return (
+                  <React.Fragment key={subLesson.id}>
+                    <Link href={`/lesson/${lessonId}/${subLesson.id}`}>
+                      <Button
+                        variant={isActive ? "default" : "outline"}
+                        size="sm"
+                        className="relative"
+                      >
+                        {isSubCompleted && (
+                          <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                        )}
+                        {subLesson.id}: {subLesson.title}
+                      </Button>
+                    </Link>
+                    {index < lesson.subLessons.length - 1 && (
+                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </React.Fragment>
+                );
+              })}
+              {/* Show reflection link */}
+              {lesson.activities && lesson.activities.length > 0 && (
+                <>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  <Link href={`/lesson/${lessonId}/activity/${lesson.activities[0].id}`}>
+                    <Button
+                      variant={allSubLessonsComplete ? "outline" : "ghost"}
+                      size="sm"
+                      className="relative"
+                      disabled={!allSubLessonsComplete}
+                    >
+                      {allSubLessonsComplete && (
+                        <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                      )}
+                      Reflection
+                    </Button>
+                  </Link>
+                </>
+              )}
+            </div>
+
+            {/* Activity navigation within sub-lesson */}
+            <ActivityNav
+              activities={currentSubLesson.activities}
+              currentActivityId={currentActivity.id}
+              completedActivities={completedActivities}
+              onActivitySelect={(activityId) => setLocation(`/lesson/${lessonId}/${currentSubLesson.id}/activity/${activityId}`)}
+            />
+          </div>
+
+          {/* Activity content */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>{currentActivity.title}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div 
+                className="prose prose-sm dark:prose-invert max-w-none mb-6"
+                dangerouslySetInnerHTML={{ __html: currentActivity.content }}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Exercises */}
+          {currentActivity.exercises && currentActivity.exercises.length > 0 && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold mb-4">Exercises</h3>
+              {currentActivity.exercises.map((exercise) => (
+                <ExerciseForm
+                  key={exercise.id}
+                  exercise={exercise}
+                  lessonId={lessonId}
+                  subLessonId={currentSubLesson.id}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Completion button */}
+          <div className="mt-8 flex justify-between items-center pb-8">
+            <div>
+              {completedActivities.has(currentActivity.id) && (
+                <div className="flex items-center gap-2 text-green-600">
+                  <CheckCircle className="h-5 w-5" />
+                  <span className="text-sm font-medium">Activity completed</span>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex gap-3">
+              {completedActivities.has(currentActivity.id) && (
+                <Button
+                  onClick={handleMarkIncomplete}
+                  size="lg"
+                  variant="outline"
+                  className="min-w-[180px]"
+                >
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  Mark as Incomplete
+                </Button>
+              )}
+              <Button
+                onClick={handleCompleteActivity}
+                size="lg"
+                className="min-w-[200px]"
+              >
+                {completedActivities.has(currentActivity.id) ? (
+                  currentSubLesson.activities.findIndex(a => a.id === currentActivity.id) === currentSubLesson.activities.length - 1 
+                    ? (getSubLessonProgress(lessonId, currentSubLesson.id) ? "Next Sub-lesson" : "Complete Sub-lesson")
+                    : "Next Activity"
+                ) : (
+                  "Mark as Complete"
+                )}
+                {currentSubLesson.activities.findIndex(a => a.id === currentActivity.id) < currentSubLesson.activities.length - 1 && 
+                  <ChevronRight className="ml-2 h-4 w-4" />}
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Fallback for sub-lessons without activities
+    const isCompleted = getSubLessonProgress(lessonId, currentSubLesson.id);
+    const currentSubIndex = lesson.subLessons.findIndex(sl => sl.id === currentSubLesson.id);
+    const isLastSubLesson = currentSubIndex === lesson.subLessons.length - 1;
+
+    return (
+      <div className="max-w-4xl">
+        <div className="mb-6">
+          <Link href="/">
+            <Button variant="ghost" className="mb-4">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Dashboard
+            </Button>
+          </Link>
+          
+          <div className="mb-4">
+            <h1 className="text-3xl font-bold mb-2">
+              Lesson {lessonId}: {lesson.title}
+            </h1>
+            <p className="text-muted-foreground">
+              {lesson.description}
+            </p>
+          </div>
+
+          {/* Sub-lesson navigation */}
+          <div className="flex items-center gap-2 mb-6 flex-wrap">
+            {lesson.subLessons.map((subLesson, index) => {
+              const isActive = subLesson.id === currentSubLesson.id;
+              const isSubCompleted = getSubLessonProgress(lessonId, subLesson.id);
+              
+              return (
+                <React.Fragment key={subLesson.id}>
+                  <Link href={`/lesson/${lessonId}/${subLesson.id}`}>
+                    <Button
+                      variant={isActive ? "default" : "outline"}
+                      size="sm"
+                      className="relative"
+                    >
+                      {isSubCompleted && (
+                        <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                      )}
+                      {subLesson.id}
+                    </Button>
+                  </Link>
+                  {index < lesson.subLessons.length - 1 && (
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </React.Fragment>
+              );
+            })}
+            {/* Show reflection link */}
+            {lesson.activities && lesson.activities.length > 0 && (
+              <>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                <Link href={`/lesson/${lessonId}/activity/${lesson.activities[0].id}`}>
+                  <Button
+                    variant={allSubLessonsComplete ? "outline" : "ghost"}
+                    size="sm"
+                    className="relative"
+                    disabled={!allSubLessonsComplete}
+                  >
+                    {allSubLessonsComplete && (
+                      <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                    )}
+                    Reflection
+                  </Button>
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Sub-lesson content */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>{currentSubLesson.title}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">
+              {currentSubLesson.description || "This sub-lesson has no activities."}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Completion button */}
+        <div className="mt-8 flex justify-between items-center pb-8">
+          <div>
+            {isCompleted && (
+              <div className="flex items-center gap-2 text-green-600">
+                <CheckCircle className="h-5 w-5" />
+                <span className="text-sm font-medium">Section completed</span>
+              </div>
+            )}
+          </div>
+          
+          <Button
+            onClick={() => markSubLessonComplete(lessonId, currentSubLesson.id)}
+            size="lg"
+            className="min-w-[200px]"
+          >
+            {isCompleted ? (
+              isLastSubLesson ? (allSubLessonsComplete && lesson.activities ? "View Reflection" : "Back to Dashboard") : "Next Section"
+            ) : (
+              "Mark as Complete"
+            )}
+            {!isCompleted && !isLastSubLesson && <ChevronRight className="ml-2 h-4 w-4" />}
+          </Button>
+        </div>
+      </div>
+    );
+  } else if (lesson.activities) {
+    // Direct activities under lesson (only shown if no sub-lessons OR viewing reflection)
     if (!currentActivity) {
       return (
         <div className="text-center py-12">
@@ -265,13 +572,57 @@ export default function LessonPage({ lessonId, subLessonId, activityId }: Lesson
             </p>
           </div>
 
+          {/* Show sub-lesson navigation if lesson has sub-lessons */}
+          {lesson.subLessons && (
+            <div className="flex items-center gap-2 mb-4 flex-wrap">
+              {lesson.subLessons.map((subLesson, index) => {
+                const isSubCompleted = getSubLessonProgress(lessonId, subLesson.id);
+                
+                return (
+                  <React.Fragment key={subLesson.id}>
+                    <Link href={`/lesson/${lessonId}/${subLesson.id}`}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="relative"
+                      >
+                        {isSubCompleted && (
+                          <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                        )}
+                        {subLesson.id}: {subLesson.title}
+                      </Button>
+                    </Link>
+                    {index < lesson.subLessons.length - 1 && (
+                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </React.Fragment>
+                );
+              })}
+              {/* Show reflection link as active */}
+              {lesson.activities && lesson.activities.length > 0 && (
+                <>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="relative"
+                  >
+                    Reflection
+                  </Button>
+                </>
+              )}
+            </div>
+          )}
+
           {/* Activity navigation */}
-          <ActivityNav
-            activities={lesson.activities}
-            currentActivityId={currentActivity.id}
-            completedActivities={completedActivities}
-            onActivitySelect={(activityId) => setLocation(`/lesson/${lessonId}/activity/${activityId}`)}
-          />
+          {!lesson.subLessons && (
+            <ActivityNav
+              activities={lesson.activities}
+              currentActivityId={currentActivity.id}
+              completedActivities={completedActivities}
+              onActivitySelect={(activityId) => setLocation(`/lesson/${lessonId}/activity/${activityId}`)}
+            />
+          )}
         </div>
 
         {/* Activity content */}
@@ -341,114 +692,6 @@ export default function LessonPage({ lessonId, subLessonId, activityId }: Lesson
                 <ChevronRight className="ml-2 h-4 w-4" />}
             </Button>
           </div>
-        </div>
-      </div>
-    );
-  } else if (lesson.subLessons) {
-    // Sub-lesson based structure
-    if (!currentSubLesson) {
-      return (
-        <div className="text-center py-12">
-          <h2 className="text-2xl font-semibold mb-4">Sub-lesson not found</h2>
-          <Link href="/">
-            <Button>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Dashboard
-            </Button>
-          </Link>
-        </div>
-      );
-    }
-
-    // For now, keep the existing sub-lesson navigation for lessons with sub-lessons
-    // This will be enhanced in a future update
-    const isCompleted = getSubLessonProgress(lessonId, currentSubLesson.id);
-    const currentSubIndex = lesson.subLessons.findIndex(sl => sl.id === currentSubLesson.id);
-    const isLastSubLesson = currentSubIndex === lesson.subLessons.length - 1;
-
-    return (
-      <div className="max-w-4xl">
-        <div className="mb-6">
-          <Link href="/">
-            <Button variant="ghost" className="mb-4">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Dashboard
-            </Button>
-          </Link>
-          
-          <div className="mb-4">
-            <h1 className="text-3xl font-bold mb-2">
-              Lesson {lessonId}: {lesson.title}
-            </h1>
-            <p className="text-muted-foreground">
-              {lesson.description}
-            </p>
-          </div>
-
-          {/* Sub-lesson navigation */}
-          <div className="flex items-center gap-2 mb-6 flex-wrap">
-            {lesson.subLessons.map((subLesson, index) => {
-              const isActive = subLesson.id === currentSubLesson.id;
-              const isSubCompleted = getSubLessonProgress(lessonId, subLesson.id);
-              
-              return (
-                <React.Fragment key={subLesson.id}>
-                  <Link href={`/lesson/${lessonId}/${subLesson.id}`}>
-                    <Button
-                      variant={isActive ? "default" : "outline"}
-                      size="sm"
-                      className="relative"
-                    >
-                      {isSubCompleted && (
-                        <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
-                      )}
-                      {subLesson.id}
-                    </Button>
-                  </Link>
-                  {index < lesson.subLessons.length - 1 && (
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                  )}
-                </React.Fragment>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Sub-lesson content */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>{currentSubLesson.title}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              Sub-lesson content would go here. Activities within sub-lessons will be implemented next.
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Completion button */}
-        <div className="mt-8 flex justify-between items-center pb-8">
-          <div>
-            {isCompleted && (
-              <div className="flex items-center gap-2 text-green-600">
-                <CheckCircle className="h-5 w-5" />
-                <span className="text-sm font-medium">Section completed</span>
-              </div>
-            )}
-          </div>
-          
-          <Button
-            onClick={() => markSubLessonComplete(lessonId, currentSubLesson.id)}
-            size="lg"
-            className="min-w-[200px]"
-          >
-            {isCompleted ? (
-              isLastSubLesson ? "Back to Dashboard" : "Next Section"
-            ) : (
-              "Mark as Complete"
-            )}
-            {!isLastSubLesson && <ChevronRight className="ml-2 h-4 w-4" />}
-          </Button>
         </div>
       </div>
     );
