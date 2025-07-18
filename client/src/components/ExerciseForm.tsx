@@ -19,6 +19,7 @@ const exerciseComponents: Record<string, React.LazyExoticComponent<React.Compone
   PatternMatchingDragDrop: lazy(() => import("./exercises/PatternMatchingDragDrop")),
   RiskRadarDragDrop: lazy(() => import("./exercises/RiskRadarDragDrop")),
   OperationalDebtDragDrop: lazy(() => import("./exercises/OperationalDebtDragDrop")),
+  NinetyDayDashDragDrop: lazy(() => import("./exercises/NinetyDayDashDragDrop")),
 };
 
 export default function ExerciseForm({ exercise, lessonId, subLessonId }: ExerciseFormProps) {
