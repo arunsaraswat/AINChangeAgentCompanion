@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
@@ -8,6 +8,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
 import LessonPage from "./pages/LessonPage";
+import PrintView from "./pages/PrintView";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -29,14 +30,21 @@ function Router() {
 }
 
 function App() {
+  const [location] = useLocation();
+  const isPrintView = location === "/print-view";
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <CourseProgressProvider>
           <TooltipProvider>
-            <Layout>
-              <Router />
-            </Layout>
+            {isPrintView ? (
+              <PrintView />
+            ) : (
+              <Layout>
+                <Router />
+              </Layout>
+            )}
             <Toaster />
           </TooltipProvider>
         </CourseProgressProvider>

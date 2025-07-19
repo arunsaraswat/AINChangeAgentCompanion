@@ -20,6 +20,7 @@ import {
   Moon,
   Sun,
   X,
+  Printer,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCourseProgress } from "@/contexts/CourseProgressContext";
@@ -172,6 +173,15 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
         {/* Data Management */}
         <div className="p-4 space-y-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full justify-start"
+            onClick={() => window.open('/print-view', '_blank')}
+          >
+            <Printer className="mr-2 h-4 w-4" />
+            Print View
+          </Button>
           <Button
             variant="outline"
             size="sm"

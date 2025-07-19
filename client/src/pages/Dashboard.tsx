@@ -4,19 +4,7 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { 
   ArrowRight, 
-  BookOpen, 
-  Clock, 
-  Target,
-  Lightbulb,
-  Activity,
-  Briefcase,
-  CheckCircle,
-  TrendingUp,
-  Map,
-  Users,
-  MessageSquare,
-  FileText,
-  Zap
+  BookOpen
 } from "lucide-react";
 import { useCourseProgress } from "@/contexts/CourseProgressContext";
 
@@ -34,15 +22,6 @@ const lessons = [
   { id: 10, title: "Expanding Your Impact", description: "Grow your influence as an AI change agent" },
 ];
 
-// Core competencies for change agents
-const competencies = [
-  { id: "ai-fluency", name: "AI Fluency", icon: Zap },
-  { id: "facilitation", name: "Facilitation Excellence", icon: Users },
-  { id: "stakeholder", name: "Stakeholder Engagement", icon: MessageSquare },
-  { id: "communication", name: "Strategic Communication", icon: MessageSquare },
-  { id: "planning", name: "Implementation Planning", icon: Map },
-  { id: "leadership", name: "Change Leadership", icon: Target }
-];
 
 export default function Dashboard() {
   const { getOverallProgress, getLessonProgress, progress } = useCourseProgress();
@@ -54,25 +33,6 @@ export default function Dashboard() {
     return progress > 0 && progress < 100;
   }) || lessons.find(lesson => getLessonProgress(lesson.id) === 0);
 
-  // Calculate time invested (mock data for now)
-  const timeInvested = Math.round(overallProgress * 0.4); // 40 hours total
-  const exercisesCompleted = Object.values(progress.lessons).reduce((total, lesson) => {
-    const activities = lesson.activities ? Object.values(lesson.activities) : [];
-    const subLessons = lesson.subLessons ? Object.values(lesson.subLessons) : [];
-    
-    const activityExercises = activities.reduce((count, activity) => {
-      return count + (activity.exercises ? Object.keys(activity.exercises).length : 0);
-    }, 0);
-    
-    const subLessonExercises = subLessons.reduce((count, subLesson) => {
-      return count + (subLesson.exercises ? Object.keys(subLesson.exercises).length : 0);
-    }, 0);
-    
-    return total + activityExercises + subLessonExercises;
-  }, 0);
-
-  // Mock implementation readiness score
-  const implementationReadiness = Math.min(Math.round(overallProgress * 0.8 + exercisesCompleted * 2), 100);
 
   return (
     <div className="space-y-6">
@@ -135,201 +95,8 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Key Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between mb-2">
-              <Activity className="h-8 w-8 text-indigo-500" />
-              <span className="text-2xl font-bold">{exercisesCompleted}</span>
-            </div>
-            <p className="text-sm font-medium">Exercises Completed</p>
-            <p className="text-xs text-muted-foreground">Building practical skills</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between mb-2">
-              <Clock className="h-8 w-8 text-green-500" />
-              <span className="text-2xl font-bold">{timeInvested}h</span>
-            </div>
-            <p className="text-sm font-medium">Time Invested</p>
-            <p className="text-xs text-muted-foreground">Of 40h total journey</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between mb-2">
-              <Target className="h-8 w-8 text-purple-500" />
-              <span className="text-2xl font-bold">{implementationReadiness}%</span>
-            </div>
-            <p className="text-sm font-medium">Implementation Ready</p>
-            <p className="text-xs text-muted-foreground">Prepared to lead change</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between mb-2">
-              <Briefcase className="h-8 w-8 text-orange-500" />
-              <span className="text-2xl font-bold">0</span>
-            </div>
-            <p className="text-sm font-medium">Tools Mastered</p>
-            <p className="text-xs text-muted-foreground">Ready to deploy</p>
-          </CardContent>
-        </Card>
-      </div>
 
-      {/* Skills Development Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Core Competencies */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              Core Competencies
-            </CardTitle>
-            <CardDescription>Your skill development across key areas</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {competencies.map((competency) => {
-                const Icon = competency.icon;
-                // Mock skill levels based on progress
-                const skillLevel = Math.min(
-                  100,
-                  Math.round(overallProgress * (0.7 + Math.random() * 0.3))
-                );
-                
-                return (
-                  <div key={competency.id} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Icon className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">{competency.name}</span>
-                      </div>
-                      <span className="text-sm text-muted-foreground">{skillLevel}%</span>
-                    </div>
-                    <Progress value={skillLevel} className="h-2" />
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
 
-        {/* Recent Activity */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5" />
-              Recent Activity
-            </CardTitle>
-            <CardDescription>Continue where you left off</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {overallProgress > 0 ? (
-                <>
-                  <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
-                    <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">Completed: Technical-Business Communication Gaps</p>
-                      <p className="text-xs text-muted-foreground">Lesson 2 • 2 hours ago</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
-                    <Activity className="h-5 w-5 text-blue-500 mt-0.5" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">In Progress: Match the Method Exercise</p>
-                      <p className="text-xs text-muted-foreground">Lesson 2 • Continue now</p>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <BookOpen className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                  <p className="text-sm">No activity yet</p>
-                  <p className="text-xs">Start your first lesson to begin tracking</p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Key Insights & Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Key Insights */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Lightbulb className="h-5 w-5" />
-              Key Insights Captured
-            </CardTitle>
-            <CardDescription>Important learnings from your journey</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {exercisesCompleted > 0 ? (
-              <div className="space-y-3">
-                <div className="p-3 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg">
-                  <p className="text-sm font-medium mb-1">Communication gaps create AI adoption barriers</p>
-                  <p className="text-xs text-muted-foreground">From Lesson 2: Advancing AI Fluency</p>
-                </div>
-                <div className="p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-                  <p className="text-sm font-medium mb-1">Stakeholder mapping is crucial for success</p>
-                  <p className="text-xs text-muted-foreground">From Lesson 4: Stakeholder Mapping</p>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <Lightbulb className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p className="text-sm">No insights captured yet</p>
-                <p className="text-xs">Complete exercises to capture learnings</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Action Items */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Your Action Plan
-            </CardTitle>
-            <CardDescription>Next steps for your organization</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {exercisesCompleted > 0 ? (
-              <div className="space-y-3">
-                <div className="flex items-start gap-3">
-                  <div className="w-2 h-2 rounded-full bg-indigo-500 mt-1.5" />
-                  <div className="flex-1">
-                    <p className="text-sm">Identify key stakeholders for AI initiatives</p>
-                    <p className="text-xs text-muted-foreground">Priority: High</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-2 h-2 rounded-full bg-green-500 mt-1.5" />
-                  <div className="flex-1">
-                    <p className="text-sm">Schedule AI fluency workshop for leadership team</p>
-                    <p className="text-xs text-muted-foreground">Priority: Medium</p>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <FileText className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p className="text-sm">No action items yet</p>
-                <p className="text-xs">Progress through lessons to build your plan</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
 
       {/* Lesson Progress - Compact View */}
       <Card>
