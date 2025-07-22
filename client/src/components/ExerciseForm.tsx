@@ -1,10 +1,11 @@
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { ControlledInput } from "@/components/ui/controlled-input";
+import { ControlledTextarea } from "@/components/ui/controlled-textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCourseProgress, type Exercise } from "../contexts/CourseProgressContext";
-import { lazy, Suspense, useCallback } from "react";
+import { lazy, Suspense, useCallback, useState, useEffect } from "react";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface ExerciseFormProps {
   exercise: Exercise;
@@ -23,23 +24,60 @@ const exerciseComponents: Record<string, React.LazyExoticComponent<React.Compone
 };
 
 export default function ExerciseForm({ exercise, lessonId, subLessonId }: ExerciseFormProps) {
-  const { updateExerciseAnswer, updateStepAnswer } = useCourseProgress();
+  const { updateExerciseAnswer, updateStepAnswer, getExerciseAnswer } = useCourseProgress();
+  
+  // Initialize local state from context
+  const contextAnswer = getExerciseAnswer(lessonId, subLessonId, exercise.id);
+  const [localAnswer, setLocalAnswer] = useState<string | string[]>(
+    exercise.answer || contextAnswer?.answer || ''
+  );
+  const [localStepAnswers, setLocalStepAnswers] = useState<Record<string, string | string[]>>(() => {
+    const stepAnswers: Record<string, string | string[]> = {};
+    if (contextAnswer?.stepAnswers) {
+      Object.entries(contextAnswer.stepAnswers).forEach(([key, value]) => {
+        if (value !== undefined) {
+          stepAnswers[key] = value;
+        }
+      });
+    }
+    return stepAnswers;
+  });
 
-  // Use direct updates without local state to avoid sync issues in production
+  // Debounce the values for context updates
+  const debouncedAnswer = useDebounce(localAnswer, 500);
+  const debouncedStepAnswers = useDebounce(localStepAnswers, 500);
+
+  // Update context when debounced values change
+  useEffect(() => {
+    if (debouncedAnswer !== undefined) {
+      updateExerciseAnswer(lessonId, subLessonId, exercise.id, debouncedAnswer);
+    }
+  }, [debouncedAnswer, lessonId, subLessonId, exercise.id, updateExerciseAnswer]);
+
+  useEffect(() => {
+    Object.entries(debouncedStepAnswers).forEach(([stepId, value]) => {
+      updateStepAnswer(lessonId, subLessonId, exercise.id, stepId, value);
+    });
+  }, [debouncedStepAnswers, lessonId, subLessonId, exercise.id, updateStepAnswer]);
+
+  // Handle immediate local updates
   const handleAnswerChange = useCallback((value: string | string[]) => {
-    updateExerciseAnswer(lessonId, subLessonId, exercise.id, value);
-  }, [lessonId, subLessonId, exercise.id, updateExerciseAnswer]);
+    setLocalAnswer(value);
+  }, []);
 
   const handleStepAnswerChange = useCallback((stepId: string, value: string) => {
-    updateStepAnswer(lessonId, subLessonId, exercise.id, stepId, value);
-  }, [lessonId, subLessonId, exercise.id, updateStepAnswer]);
+    setLocalStepAnswers(prev => ({
+      ...prev,
+      [stepId]: value
+    }));
+  }, []);
 
   const renderFormField = () => {
     switch (exercise.type) {
       case 'text':
         return (
-          <Input
-            value={exercise.answer as string || ''}
+          <ControlledInput
+            value={localAnswer as string || ''}
             onChange={(e) => handleAnswerChange(e.target.value)}
             placeholder="Enter your answer..."
             className="mt-2"
@@ -49,8 +87,8 @@ export default function ExerciseForm({ exercise, lessonId, subLessonId }: Exerci
       case 'textarea':
         return (
           <div className="mt-2 space-y-3">
-            <Textarea
-              value={exercise.answer as string || ''}
+            <ControlledTextarea
+              value={localAnswer as string || ''}
               onChange={(e) => handleAnswerChange(e.target.value)}
               placeholder="Enter your response..."
               className="min-h-[100px]"
@@ -62,7 +100,7 @@ export default function ExerciseForm({ exercise, lessonId, subLessonId }: Exerci
       case 'radio':
         return (
           <RadioGroup
-            value={exercise.answer as string || ''}
+            value={localAnswer as string || ''}
             onValueChange={handleAnswerChange}
             className="mt-2 space-y-3"
           >
@@ -97,8 +135,8 @@ export default function ExerciseForm({ exercise, lessonId, subLessonId }: Exerci
                   </div>
                 </div>
                 {step.type === 'textarea' ? (
-                  <Textarea
-                    value={step.answer as string || ''}
+                  <ControlledTextarea
+                    value={localStepAnswers[step.id] as string || ''}
                     onChange={(e) => handleStepAnswerChange(step.id, e.target.value)}
                     placeholder="Enter your response..."
                     className="min-h-[80px]"
@@ -106,7 +144,7 @@ export default function ExerciseForm({ exercise, lessonId, subLessonId }: Exerci
                   />
                 ) : step.type === 'radio' ? (
                   <RadioGroup
-                    value={step.answer as string || ''}
+                    value={localStepAnswers[step.id] as string || ''}
                     onValueChange={(value) => handleStepAnswerChange(step.id, value)}
                     className="mt-2 space-y-2"
                   >
@@ -120,8 +158,8 @@ export default function ExerciseForm({ exercise, lessonId, subLessonId }: Exerci
                     ))}
                   </RadioGroup>
                 ) : (
-                  <Input
-                    value={step.answer as string || ''}
+                  <ControlledInput
+                    value={localStepAnswers[step.id] as string || ''}
                     onChange={(e) => handleStepAnswerChange(step.id, e.target.value)}
                     placeholder="Enter your answer..."
                   />
@@ -140,7 +178,7 @@ export default function ExerciseForm({ exercise, lessonId, subLessonId }: Exerci
         return (
           <Suspense fallback={<div className="text-sm text-muted-foreground">Loading component...</div>}>
             <Component
-              answer={exercise.answer}
+              answer={localAnswer}
               onAnswerChange={handleAnswerChange}
             />
           </Suspense>
