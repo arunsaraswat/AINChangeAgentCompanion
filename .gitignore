@@ -46,3 +46,10 @@ dist-ssr
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Replit files
+.upm
+.cache
+.config
+.replit.backup
+# Keep .replit in version control for deployment config

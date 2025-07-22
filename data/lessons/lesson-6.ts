@@ -8,7 +8,7 @@ export const lesson6: Lesson = {
   subLessons: [
     {
       id: '6.1',
-      title: 'Value Thesis',
+      title: 'Value Proposal',
       description: 'Guide teams to define powerful, quantified business metrics that drive real value.',
       activities: [
         {
@@ -36,7 +36,7 @@ export const lesson6: Lesson = {
         },
         {
           id: '6.1.2',
-          title: '6.1 Value Thesis – Facilitation Challenge',
+          title: '6.1 Value Proposal – Facilitation Challenge',
           type: 'exercise',
           content: `
             <div class="space-y-6">
@@ -80,7 +80,7 @@ export const lesson6: Lesson = {
         },
         {
           id: '6.1.3',
-          title: 'Value Thesis Debrief',
+          title: 'Value Proposal Debrief',
           type: 'discussion',
           content: `
             <div class="space-y-4">
@@ -102,7 +102,7 @@ export const lesson6: Lesson = {
         },
         {
           id: '6.1.4',
-          title: 'Insights & Action: Reflect on Value Thesis',
+          title: 'Insights & Action: Reflect on Value Proposal',
           type: 'reflection',
           content: `
             <div class="space-y-4">
@@ -804,7 +804,7 @@ export const lesson6: Lesson = {
           content: `
             <div class="space-y-4">
               <p>
-                At the start of a workshop (the "Value Thesis"), a team promises: "Our AI for RFPs will win 
+                At the start of a workshop (the "Value Proposal"), a team promises: "Our AI for RFPs will win 
                 15% more deals, generating $5M in new revenue." Now, after planning the full solution, you 
                 know it requires new infrastructure, a complex data pipeline, and significant change management. 
                 Put on the hat of a skeptical CFO. What hard, challenging questions would you ask now to 

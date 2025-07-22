@@ -13,18 +13,11 @@ import {
   Rocket,
   Megaphone,
   TrendingUp,
-  Download,
-  Upload,
-  RotateCcw,
   Sparkles,
-  Moon,
-  Sun,
   X,
-  Printer,
+  Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useCourseProgress } from "@/contexts/CourseProgressContext";
-import { useTheme } from "@/contexts/ThemeContext";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: Home },
@@ -47,27 +40,6 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [location, setLocation] = useLocation();
-  const { exportProgress, importProgress, clearProgress } = useCourseProgress();
-  const { theme, toggleTheme } = useTheme();
-
-  const handleImport = () => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = ".json";
-    input.onchange = async (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) {
-        const text = await file.text();
-        try {
-          importProgress(text);
-          alert("Progress imported successfully!");
-        } catch (error) {
-          alert("Failed to import progress. Please check the file format.");
-        }
-      }
-    };
-    input.click();
-  };
 
   const handleNavigation = (href: string) => {
     setLocation(href);
@@ -152,64 +124,16 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         </nav>
       </div>
 
-      {/* Bottom Actions */}
-      <div className="mt-auto border-t">
-        {/* Dark Mode Toggle */}
-        <div className="p-4 border-b">
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full justify-start"
-            onClick={toggleTheme}
-          >
-            {theme === "light" ? (
-              <Moon className="mr-2 h-4 w-4" />
-            ) : (
-              <Sun className="mr-2 h-4 w-4" />
-            )}
-            {theme === "light" ? "Dark Mode" : "Light Mode"}
-          </Button>
-        </div>
-
-        {/* Data Management */}
-        <div className="p-4 space-y-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full justify-start"
-            onClick={() => window.open('/print-view', '_blank')}
-          >
-            <Printer className="mr-2 h-4 w-4" />
-            Print View
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full justify-start"
-            onClick={exportProgress}
-          >
-            <Download className="mr-2 h-4 w-4" />
-            Export Progress
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full justify-start"
-            onClick={handleImport}
-          >
-            <Upload className="mr-2 h-4 w-4" />
-            Import Progress
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full justify-start text-destructive hover:text-destructive"
-            onClick={clearProgress}
-          >
-            <RotateCcw className="mr-2 h-4 w-4" />
-            Clear All Data
-          </Button>
-        </div>
+      {/* User Functions Link */}
+      <div className="mt-auto border-t p-4">
+        <Button
+          variant="outline"
+          className="w-full justify-start"
+          onClick={() => handleNavigation("/user-functions")}
+        >
+          <Settings className="mr-2 h-4 w-4" />
+          User Functions
+        </Button>
       </div>
     </div>
   );

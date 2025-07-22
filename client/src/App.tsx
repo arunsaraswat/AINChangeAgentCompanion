@@ -9,12 +9,14 @@ import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
 import LessonPage from "./pages/LessonPage";
 import PrintView from "./pages/PrintView";
+import UserFunctions from "./pages/UserFunctions";
 import NotFound from "@/pages/not-found";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
+      <Route path="/user-functions" component={UserFunctions} />
       <Route path="/lesson/:id/activity/:activityId">
         {(params) => <LessonPage lessonId={parseInt(params.id)} activityId={params.activityId} />}
       </Route>
