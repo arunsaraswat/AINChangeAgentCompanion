@@ -11,7 +11,8 @@ import {
   FileDown,
   FileUp,
   Trash2,
-  Eye
+  Eye,
+  FileText
 } from "lucide-react";
 import { useCourseProgress } from "@/contexts/CourseProgressContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -19,6 +20,30 @@ import { useTheme } from "@/contexts/ThemeContext";
 export default function UserFunctions() {
   const { exportProgress, importProgress, clearProgress } = useCourseProgress();
   const { theme, toggleTheme } = useTheme();
+
+  const lessonPdfs = [
+    { name: "AINCA Lesson 1", file: "AINCA Lesson 1.pdf" },
+    { name: "AINCA Lesson 2", file: "AINCA Lesson 2.pdf" },
+    { name: "AINCA Lesson 3", file: "AINCA Lesson 3.pdf" },
+    { name: "AINCA Lesson 4", file: "AINCA Lesson 4.pdf" },
+    { name: "AINCA Lesson 5", file: "AINCA Lesson 5.pdf" },
+    { name: "AINCA Lesson 6.1", file: "AINCA Lesson 6.1.pdf" },
+    { name: "AINCA Lesson 6.2", file: "AINCA Lesson 6.2.pdf" },
+    { name: "AINCA Lesson 6.3", file: "AINCA Lesson 6.3.pdf" },
+    { name: "AINCA Lesson 6.4", file: "AINCA Lesson 6.4.pdf" },
+    { name: "AINCA Lesson 6.5", file: "AINCA Lesson 6.5.pdf" },
+    { name: "AINCA Lesson 6.6", file: "AINCA Lesson 6.6.pdf" },
+    { name: "AINCA Lesson 7", file: "AINCA Lesson 7.pdf" },
+    { name: "AINCA Lesson 8", file: "AINCA Lesson 8.pdf" },
+    { name: "AINCA Lesson 9", file: "AINCA Lesson 9.pdf" },
+    { name: "AINCA Lesson 10", file: "AINCA Lesson 10.pdf" }
+  ];
+
+  const workshopAssets = [
+    { name: "AI-Native Implementation Tracker", file: "AI-Native Implementation Tracker.pdf" },
+    { name: "AI-Native Value Blueprint", file: "AI-Native Value Blueprint.pdf" },
+    { name: "AI-Native Workshop Charter", file: "AI-Native Workshop Charter.pdf" }
+  ];
 
   const handleImport = () => {
     const input = document.createElement("input");
@@ -47,6 +72,53 @@ export default function UserFunctions() {
           Manage your app preferences and course progress data
         </p>
       </div>
+
+      {/* Course Materials */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Course Materials
+          </CardTitle>
+          <CardDescription>
+            Access PDF versions of course lessons
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {lessonPdfs.map((pdf, index) => (
+              <Button
+                key={index}
+                variant="outline"
+                size="lg"
+                className="w-full justify-start"
+                onClick={() => window.open(`/assets/${pdf.file}`, '_blank')}
+              >
+                <FileText className="mr-2 h-4 w-4 flex-shrink-0" />
+                <span className="truncate">{pdf.name}</span>
+              </Button>
+            ))}
+          </div>
+          
+          <div className="border-t pt-6">
+            <h3 className="text-lg font-semibold mb-4">Workshop Assets</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {workshopAssets.map((pdf, index) => (
+                <Button
+                  key={index}
+                  variant="outline"
+                  size="lg"
+                  className="w-full justify-start h-auto py-3 px-4"
+                  onClick={() => window.open(`/assets/${pdf.file}`, '_blank')}
+                >
+                  <FileText className="mr-2 h-4 w-4 flex-shrink-0" />
+                  <span className="text-left">{pdf.name}</span>
+                </Button>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Theme Settings */}
       <Card>
