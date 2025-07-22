@@ -29,10 +29,12 @@ if (!existsSync(distPath) || !existsSync(distIndexPath)) {
   
   try {
     // Install dependencies if node_modules doesn't exist
+    // Note: We use --production=false to ensure devDependencies are installed
+    // This is necessary because Vite and other build tools are devDependencies
     const nodeModulesPath = join(rootDir, 'node_modules');
     if (!existsSync(nodeModulesPath)) {
-      console.log('📥 Installing dependencies...');
-      execSync('npm install', { 
+      console.log('📥 Installing dependencies (including devDependencies for build tools)...');
+      execSync('npm install --production=false', { 
         stdio: 'inherit',
         cwd: rootDir 
       });

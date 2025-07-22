@@ -1,8 +1,9 @@
-run = ["sh", "-c", "if [ ! -d 'dist' ]; then npm install && npm run build:prod; fi && npm run start:replit"]
+run = ["sh", "-c", "if [ ! -d 'dist' ]; then npm install --production=false && npm run build:prod; fi && npm run start:replit"]
 entrypoint = "server/index.ts"
 
 [deployment]
-build = ["sh", "-c", "npm install && npm run build:prod"]
+# Note: We use --production=false to ensure devDependencies (Vite, esbuild, etc.) are installed
+build = ["sh", "-c", "npm install --production=false && npm run build:prod"]
 run = ["sh", "-c", "npm run start:replit"]
 deploymentTarget = "cloudrun"
 

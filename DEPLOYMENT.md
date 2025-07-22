@@ -71,6 +71,13 @@ npm run dev
 
 ## Troubleshooting
 
+### Vite Not Found Error
+If you get an error about Vite not being found during build:
+- The build tools (Vite, esbuild, TypeScript) are in devDependencies
+- Replit needs these to build the project
+- Our configuration uses `npm install --production=false` to ensure all dependencies are installed
+- This is handled automatically in `.replit` and the startup script
+
 ### TypeScript Errors
 The production build ignores TypeScript errors. To check types locally:
 ```bash
