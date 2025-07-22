@@ -103,7 +103,7 @@ export default function LessonPage({ lessonId, subLessonId, activityId }: Lesson
     };
 
     loadLesson();
-  }, [lessonId, subLessonId, activityId, setLocation, getExerciseAnswer]);
+  }, [lessonId, subLessonId, activityId, setLocation]);
 
   // Helper function to merge saved answers with activity
   const mergeActivityWithAnswers = (
