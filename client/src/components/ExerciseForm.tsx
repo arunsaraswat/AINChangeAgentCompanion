@@ -4,7 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCourseProgress, type Exercise } from "../contexts/CourseProgressContext";
-import { lazy, Suspense, useState, useEffect, useRef } from "react";
+import { lazy, Suspense, useState, useEffect, useRef, useLayoutEffect } from "react";
 
 interface ExerciseFormProps {
   exercise: Exercise;
@@ -33,9 +33,19 @@ export default function ExerciseForm({ exercise, lessonId, subLessonId }: Exerci
   const answerTimeoutRef = useRef<NodeJS.Timeout>();
   const stepTimeoutRefs = useRef<Record<string, NodeJS.Timeout>>({});
   
+  // Refs for input elements and cursor position
+  const inputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const cursorPositionRef = useRef<number | null>(null);
+  
   // Sync local state with props when exercise changes
   useEffect(() => {
-    setLocalAnswer(exercise.answer || '');
+    // Only update if the answer has actually changed from external source
+    const newAnswer = exercise.answer || '';
+    if (JSON.stringify(newAnswer) !== JSON.stringify(localAnswer)) {
+      setLocalAnswer(newAnswer);
+    }
+    
     // Initialize step answers
     if (exercise.steps) {
       const stepAnswers: Record<string, string | string[]> = {};
@@ -43,10 +53,30 @@ export default function ExerciseForm({ exercise, lessonId, subLessonId }: Exerci
         stepAnswers[step.id] = step.answer || '';
       });
       setLocalStepAnswers(stepAnswers);
+    } else {
+      setLocalStepAnswers({});
     }
-  }, [exercise.id]); // Re-sync when exercise changes
+  }, [exercise.answer, exercise.steps, exercise.id]); // Re-sync when exercise data changes
 
-  const handleAnswerChange = (value: string | string[]) => {
+  // Restore cursor position after state updates
+  useLayoutEffect(() => {
+    if (cursorPositionRef.current !== null) {
+      if (inputRef.current) {
+        inputRef.current.setSelectionRange(cursorPositionRef.current, cursorPositionRef.current);
+      } else if (textareaRef.current) {
+        textareaRef.current.setSelectionRange(cursorPositionRef.current, cursorPositionRef.current);
+      }
+      // Reset cursor position after applying
+      cursorPositionRef.current = null;
+    }
+  }, [localAnswer]);
+
+  const handleAnswerChange = (value: string | string[], event?: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    // Capture cursor position if event is provided
+    if (event && event.target) {
+      cursorPositionRef.current = event.target.selectionStart;
+    }
+    
     // Update local state immediately for responsive UI
     setLocalAnswer(value);
     
@@ -96,8 +126,9 @@ export default function ExerciseForm({ exercise, lessonId, subLessonId }: Exerci
       case 'text':
         return (
           <Input
+            ref={inputRef}
             value={localAnswer as string}
-            onChange={(e) => handleAnswerChange(e.target.value)}
+            onChange={(e) => handleAnswerChange(e.target.value, e)}
             placeholder="Enter your answer..."
             className="mt-2"
           />
@@ -107,8 +138,9 @@ export default function ExerciseForm({ exercise, lessonId, subLessonId }: Exerci
         return (
           <div className="mt-2 space-y-3">
             <Textarea
+              ref={textareaRef}
               value={localAnswer as string}
-              onChange={(e) => handleAnswerChange(e.target.value)}
+              onChange={(e) => handleAnswerChange(e.target.value, e)}
               placeholder="Enter your response..."
               className="min-h-[100px]"
               rows={4}
@@ -120,7 +152,7 @@ export default function ExerciseForm({ exercise, lessonId, subLessonId }: Exerci
         return (
           <RadioGroup
             value={localAnswer as string}
-            onValueChange={(value) => handleAnswerChange(value)}
+            onValueChange={(value) => handleAnswerChange(value, undefined)}
             className="mt-2 space-y-3"
           >
             {exercise.options?.map((option, index) => (
@@ -198,7 +230,7 @@ export default function ExerciseForm({ exercise, lessonId, subLessonId }: Exerci
           <Suspense fallback={<div className="text-sm text-muted-foreground">Loading component...</div>}>
             <Component
               answer={localAnswer}
-              onAnswerChange={handleAnswerChange}
+              onAnswerChange={(value) => handleAnswerChange(value, undefined)}
             />
           </Suspense>
         );
