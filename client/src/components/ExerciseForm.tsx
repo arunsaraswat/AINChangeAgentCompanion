@@ -4,7 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCourseProgress, type Exercise } from "../contexts/CourseProgressContext";
-import { lazy, Suspense, useState, useEffect, useRef, useLayoutEffect } from "react";
+import { lazy, Suspense, useCallback } from "react";
 
 interface ExerciseFormProps {
   exercise: Exercise;
@@ -24,111 +24,23 @@ const exerciseComponents: Record<string, React.LazyExoticComponent<React.Compone
 
 export default function ExerciseForm({ exercise, lessonId, subLessonId }: ExerciseFormProps) {
   const { updateExerciseAnswer, updateStepAnswer } = useCourseProgress();
-  
-  // Local state for synchronous updates to prevent cursor jumping
-  const [localAnswer, setLocalAnswer] = useState<string | string[]>(exercise.answer || '');
-  const [localStepAnswers, setLocalStepAnswers] = useState<Record<string, string | string[]>>({});
-  
-  // Refs for debouncing
-  const answerTimeoutRef = useRef<NodeJS.Timeout>();
-  const stepTimeoutRefs = useRef<Record<string, NodeJS.Timeout>>({});
-  
-  // Refs for input elements and cursor position
-  const inputRef = useRef<HTMLInputElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const cursorPositionRef = useRef<number | null>(null);
-  
-  // Sync local state with props when exercise changes
-  useEffect(() => {
-    // Only update if the answer has actually changed from external source
-    const newAnswer = exercise.answer || '';
-    if (JSON.stringify(newAnswer) !== JSON.stringify(localAnswer)) {
-      setLocalAnswer(newAnswer);
-    }
-    
-    // Initialize step answers
-    if (exercise.steps) {
-      const stepAnswers: Record<string, string | string[]> = {};
-      exercise.steps.forEach(step => {
-        stepAnswers[step.id] = step.answer || '';
-      });
-      setLocalStepAnswers(stepAnswers);
-    } else {
-      setLocalStepAnswers({});
-    }
-  }, [exercise.answer, exercise.steps, exercise.id]); // Re-sync when exercise data changes
 
-  // Restore cursor position after state updates
-  useLayoutEffect(() => {
-    if (cursorPositionRef.current !== null) {
-      if (inputRef.current) {
-        inputRef.current.setSelectionRange(cursorPositionRef.current, cursorPositionRef.current);
-      } else if (textareaRef.current) {
-        textareaRef.current.setSelectionRange(cursorPositionRef.current, cursorPositionRef.current);
-      }
-      // Reset cursor position after applying
-      cursorPositionRef.current = null;
-    }
-  }, [localAnswer]);
+  // Use direct updates without local state to avoid sync issues in production
+  const handleAnswerChange = useCallback((value: string | string[]) => {
+    updateExerciseAnswer(lessonId, subLessonId, exercise.id, value);
+  }, [lessonId, subLessonId, exercise.id, updateExerciseAnswer]);
 
-  const handleAnswerChange = (value: string | string[], event?: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    // Capture cursor position if event is provided
-    if (event && event.target) {
-      cursorPositionRef.current = event.target.selectionStart;
-    }
-    
-    // Update local state immediately for responsive UI
-    setLocalAnswer(value);
-    
-    // Clear existing timeout
-    if (answerTimeoutRef.current) {
-      clearTimeout(answerTimeoutRef.current);
-    }
-    
-    // Debounce context update to prevent excessive re-renders
-    answerTimeoutRef.current = setTimeout(() => {
-      updateExerciseAnswer(lessonId, subLessonId, exercise.id, value);
-    }, 300);
-  };
-
-  const handleStepAnswerChange = (stepId: string, value: string) => {
-    // Update local state immediately
-    setLocalStepAnswers(prev => ({
-      ...prev,
-      [stepId]: value
-    }));
-    
-    // Clear existing timeout for this step
-    if (stepTimeoutRefs.current[stepId]) {
-      clearTimeout(stepTimeoutRefs.current[stepId]);
-    }
-    
-    // Debounce context update
-    stepTimeoutRefs.current[stepId] = setTimeout(() => {
-      updateStepAnswer(lessonId, subLessonId, exercise.id, stepId, value);
-    }, 300);
-  };
-  
-  // Clean up timeouts on unmount
-  useEffect(() => {
-    return () => {
-      if (answerTimeoutRef.current) {
-        clearTimeout(answerTimeoutRef.current);
-      }
-      Object.values(stepTimeoutRefs.current).forEach(timeout => {
-        clearTimeout(timeout);
-      });
-    };
-  }, []);
+  const handleStepAnswerChange = useCallback((stepId: string, value: string) => {
+    updateStepAnswer(lessonId, subLessonId, exercise.id, stepId, value);
+  }, [lessonId, subLessonId, exercise.id, updateStepAnswer]);
 
   const renderFormField = () => {
     switch (exercise.type) {
       case 'text':
         return (
           <Input
-            ref={inputRef}
-            value={localAnswer as string}
-            onChange={(e) => handleAnswerChange(e.target.value, e)}
+            value={exercise.answer as string || ''}
+            onChange={(e) => handleAnswerChange(e.target.value)}
             placeholder="Enter your answer..."
             className="mt-2"
           />
@@ -138,9 +50,8 @@ export default function ExerciseForm({ exercise, lessonId, subLessonId }: Exerci
         return (
           <div className="mt-2 space-y-3">
             <Textarea
-              ref={textareaRef}
-              value={localAnswer as string}
-              onChange={(e) => handleAnswerChange(e.target.value, e)}
+              value={exercise.answer as string || ''}
+              onChange={(e) => handleAnswerChange(e.target.value)}
               placeholder="Enter your response..."
               className="min-h-[100px]"
               rows={4}
@@ -151,8 +62,8 @@ export default function ExerciseForm({ exercise, lessonId, subLessonId }: Exerci
       case 'radio':
         return (
           <RadioGroup
-            value={localAnswer as string}
-            onValueChange={(value) => handleAnswerChange(value, undefined)}
+            value={exercise.answer as string || ''}
+            onValueChange={handleAnswerChange}
             className="mt-2 space-y-3"
           >
             {exercise.options?.map((option, index) => (
@@ -187,7 +98,7 @@ export default function ExerciseForm({ exercise, lessonId, subLessonId }: Exerci
                 </div>
                 {step.type === 'textarea' ? (
                   <Textarea
-                    value={localStepAnswers[step.id] as string || ''}
+                    value={step.answer as string || ''}
                     onChange={(e) => handleStepAnswerChange(step.id, e.target.value)}
                     placeholder="Enter your response..."
                     className="min-h-[80px]"
@@ -195,7 +106,7 @@ export default function ExerciseForm({ exercise, lessonId, subLessonId }: Exerci
                   />
                 ) : step.type === 'radio' ? (
                   <RadioGroup
-                    value={localStepAnswers[step.id] as string || ''}
+                    value={step.answer as string || ''}
                     onValueChange={(value) => handleStepAnswerChange(step.id, value)}
                     className="mt-2 space-y-2"
                   >
@@ -210,7 +121,7 @@ export default function ExerciseForm({ exercise, lessonId, subLessonId }: Exerci
                   </RadioGroup>
                 ) : (
                   <Input
-                    value={localStepAnswers[step.id] as string || ''}
+                    value={step.answer as string || ''}
                     onChange={(e) => handleStepAnswerChange(step.id, e.target.value)}
                     placeholder="Enter your answer..."
                   />
@@ -229,8 +140,8 @@ export default function ExerciseForm({ exercise, lessonId, subLessonId }: Exerci
         return (
           <Suspense fallback={<div className="text-sm text-muted-foreground">Loading component...</div>}>
             <Component
-              answer={localAnswer}
-              onAnswerChange={(value) => handleAnswerChange(value, undefined)}
+              answer={exercise.answer}
+              onAnswerChange={handleAnswerChange}
             />
           </Suspense>
         );
