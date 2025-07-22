@@ -8,7 +8,7 @@
     "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
     "build:prod": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
     "start": "NODE_ENV=production node dist/index.js",
-    "start:replit": "node dist/index.js",
+    "start:replit": "node scripts/replit-start.js",
     "check": "tsc",
     "check:prod": "tsc --noEmit false || true"
   },
