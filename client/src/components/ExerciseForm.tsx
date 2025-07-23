@@ -1,6 +1,6 @@
 import { Label } from "@/components/ui/label";
-import { ControlledInput } from "@/components/ui/controlled-input";
-import { ControlledTextarea } from "@/components/ui/controlled-textarea";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCourseProgress, type Exercise } from "../contexts/CourseProgressContext";
@@ -76,7 +76,7 @@ export default function ExerciseForm({ exercise, lessonId, subLessonId }: Exerci
     switch (exercise.type) {
       case 'text':
         return (
-          <ControlledInput
+          <Input
             value={localAnswer as string || ''}
             onChange={(e) => handleAnswerChange(e.target.value)}
             placeholder="Enter your answer..."
@@ -87,7 +87,7 @@ export default function ExerciseForm({ exercise, lessonId, subLessonId }: Exerci
       case 'textarea':
         return (
           <div className="mt-2 space-y-3">
-            <ControlledTextarea
+            <Textarea
               value={localAnswer as string || ''}
               onChange={(e) => handleAnswerChange(e.target.value)}
               placeholder="Enter your response..."
@@ -135,7 +135,7 @@ export default function ExerciseForm({ exercise, lessonId, subLessonId }: Exerci
                   </div>
                 </div>
                 {step.type === 'textarea' ? (
-                  <ControlledTextarea
+                  <Textarea
                     value={localStepAnswers[step.id] as string || ''}
                     onChange={(e) => handleStepAnswerChange(step.id, e.target.value)}
                     placeholder="Enter your response..."
@@ -158,7 +158,7 @@ export default function ExerciseForm({ exercise, lessonId, subLessonId }: Exerci
                     ))}
                   </RadioGroup>
                 ) : (
-                  <ControlledInput
+                  <Input
                     value={localStepAnswers[step.id] as string || ''}
                     onChange={(e) => handleStepAnswerChange(step.id, e.target.value)}
                     placeholder="Enter your answer..."
